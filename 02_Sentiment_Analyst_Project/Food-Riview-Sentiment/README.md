@@ -111,7 +111,7 @@ A separate dataset of misinformed entries is documented for further evaluation.
 
 ## 📄 Documentation
 For full interpretation, performance tables, and detailed discussion, see:  
-📘 [Sentiment_Snack_Review_Analysis.pdf](./Docs/Hasil Analisis Sentiment Snack Riviews.pdf)
+📘 [Sentiment_Snack_Review_Analysis.pdf](./Docs/hasil_analisis_sentiment_snack_reviews.pdf)
 
 Or access it via Google Drive:  
 🔗 [View Report](https://drive.google.com/file/d/1h2xEG3KpWD4k6xRAES6Un3tnuRfcMM3P/view?usp=sharing)
