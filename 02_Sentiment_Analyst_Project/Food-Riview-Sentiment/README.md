@@ -126,7 +126,6 @@ Or access it via Google Drive:
 ---
 
 ## 👤 Author
-**Muhammad Iqbal N**  
-Data Enthusiast | Machine Learning & NLP  
-📧 [iqbal.email@gmail.com](mailto:iqbal.email@gmail.com)  
-🔗 [LinkedIn](#)
+**M. Iqbal Nurrifki**    
+📧 [miqbalnurrifki@gmail.com]
+🔗 [miqbalnurrifki](www.linkedin.com/in/miqbalnurrifki)

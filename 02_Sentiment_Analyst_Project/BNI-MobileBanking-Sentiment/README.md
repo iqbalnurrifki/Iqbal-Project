@@ -85,6 +85,6 @@ Secara keseluruhan, kedua aplikasi BNI menunjukkan persepsi positif dari penggun
 ## 🧑‍💻 Author
 **M. Iqbal Nurrifki**  
 📧 [miqbalnurrifki@gmail.com]
-🔗 [miqbalnurrifki](#www.linkedin.com/in/miqbalnurrifki)
+🔗 [miqbalnurrifki](www.linkedin.com/in/miqbalnurrifki)
 
 
