@@ -128,4 +128,3 @@ Or access it via Google Drive:
 ## 👤 Author
 **M. Iqbal Nurrifki**    
 📧 [miqbalnurrifki@gmail.com]
-🔗 [miqbalnurrifki](www.linkedin.com/in/miqbalnurrifki)
