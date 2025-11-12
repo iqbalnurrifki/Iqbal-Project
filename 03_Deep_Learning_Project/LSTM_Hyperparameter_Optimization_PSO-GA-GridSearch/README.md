@@ -31,7 +31,7 @@ The study evaluates how each method affects model accuracy, convergence, and com
 ---
 
 ### 2. LSTM Model Structure
-- **Input Window:** 12 timesteps (1 year of data)  
+- **Input Window:** 12, 24, 36 timesteps (1 year of data)  
 - **Hidden Layers:** 1–2 (tuned via optimization)  
 - **Hidden Units:** Up to 64  
 - **Activation:** tanh  
@@ -125,6 +125,16 @@ The computational time (in seconds) for each optimization method and sequence le
 | **Data Handling** | pandas, numpy |
 | **Preprocessing & Scaling** | scikit-learn |
 | **Visualization** | matplotlib, seaborn |
-| **Evaluation Metrics** | MAE, RMSE, MAPE, R² |
+| **Evaluation Metrics** | RMSE, MAPE |
 
 ---
+
+## 📄 Documentation
+Full report and analysis are available in:  
+📘 [LSTM_Hyperparameter_Optimization_Report.pdf](./Docs/A_Comparative_Study_for_LSTM_Hyperparameter.pdf)
+
+---
+
+## 🧑‍💻 Author
+**M. Iqbal Nurrifki**  
+📧 [miqbalnurrifki@gmail.com]
