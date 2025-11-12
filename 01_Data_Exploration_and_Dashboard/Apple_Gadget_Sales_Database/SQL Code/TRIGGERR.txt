@@ -1,0 +1,29 @@
+##TRIGGERR
+
+
+--Trigger kurangin stok
+DELIMITER //
+CREATE TRIGGER tr_after_insert_detail_transaksi
+AFTER INSERT ON DetailTransaksi
+FOR EACH ROW
+BEGIN
+    DECLARE stok_terjual INT;
+    UPDATE Produk
+    SET Stok_Awal = Stok_Awal - 1
+    WHERE ID_Produk = NEW.ID_Produk;
+END//
+DELIMITER ;
+
+
+
+--Trigger nambah stok
+DELIMITER //
+CREATE TRIGGER UpdatePemasokan
+AFTER INSERT ON DetailPemasokan
+FOR EACH ROW
+BEGIN
+	UPDATE produk
+	SET Stok_awal = Stok_awal + NEW.Jumlah_Diterima
+	WHERE ID_Produk = NEW.Produk_ID_Produk;
+END//
+DELIMITER ;
