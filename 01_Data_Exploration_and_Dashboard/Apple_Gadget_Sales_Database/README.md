@@ -82,18 +82,7 @@ The ERD below illustrates the relationships among key entities such as Product, 
 
 ![Apple Gadget Store ERD](./ERD/apple_gadget_store_erd.png)
 
-## 🧩 Data Types & Constraints (Sample)
-| Table | Field | Type | Key |
-|--------|--------|------|-----|
-| Warna | ID_Warna | VARCHAR(2) | PK |
-| Memory | Kapasitas_GB | INT |  |
-| Produk | ID_Produk | VARCHAR(7) | PK |
-| Produk | ID_Warna | VARCHAR(2) | FK |
-| Pembeli | ID_Pembeli | VARCHAR(6) | PK |
-| DetailTransaksi | ID_DetailTransaksi | INT | PK |
-| DetailTransaksi | ID_Produk | VARCHAR(7) | FK |
-| Pemasokan | ID_Pemasokan | VARCHAR(6) | PK |
-| DetailPemasokan | ID_Supplier | VARCHAR(5) | FK |
+---
 
 ## Key Benefits
 
