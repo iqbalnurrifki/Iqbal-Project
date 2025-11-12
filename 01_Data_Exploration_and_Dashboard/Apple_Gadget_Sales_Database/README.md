@@ -80,7 +80,7 @@ It connects major entities such as **Product**, **Transaction**, **Supplier**, *
 
 The ERD below illustrates the relationships among key entities such as Product, Customer, Supplier, and Transaction within the Apple Gadget Store database system.
 
-![Apple Gadget Store ERD](./ERD/apple_gadget_store_erd.png)
+![Apple Gadget Store ERD](./ERD/Apple_gadget_store_erd.png)
 
 ---
 
