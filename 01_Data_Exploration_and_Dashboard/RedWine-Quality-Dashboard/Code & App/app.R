@@ -1,0 +1,539 @@
+library(shiny)
+library(shinydashboard)
+library(dashboardthemes)
+library(DT)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(caret)
+library(nnet)
+library(urltools)
+library(ggrepel)
+
+# Menggunakan file.path() untuk menentukan jalur relatif
+file_path <- file.path("www", "RedWineQuality_clean.csv")
+
+# Membaca data CSV
+df <- read.csv(file_path)
+df
+# Identifikasi kolom numerik dan kategorik
+numeric_columns <- df[sapply(df, is.numeric)]
+
+categorical_columns <- df[sapply(df, is.factor) | sapply(df, is.character)]
+categorical_columns$quality <- df$quality
+
+# Fungsi ringkasan untuk data numerik
+numeric_summary <- function(column) {
+  summary_stats <- c(
+    Min = min(column, na.rm = TRUE),
+    Q1 = quantile(column, 0.25, na.rm = TRUE),
+    Median = median(column, na.rm = TRUE),
+    Mean = mean(column, na.rm = TRUE),
+    Q3 = quantile(column, 0.75, na.rm = TRUE),
+    Max = max(column, na.rm = TRUE)
+  )
+  return(summary_stats)
+}
+
+categorical_summary <- function(column) {
+  summary_stats <- c(
+    Mode = names(sort(table(column), decreasing = TRUE))[1],
+    Count = length(column),
+    Unique = length(unique(column))
+  )
+  return(summary_stats)
+}
+
+numeric_summary_df <- as.data.frame(t(sapply(numeric_columns, numeric_summary)))
+categorical_summary_df <- if (ncol(categorical_columns) > 0) {
+  as.data.frame(t(sapply(categorical_columns, function(column) {
+    c(
+      Mode = names(sort(table(column), decreasing = TRUE))[1],
+      Count = length(column),
+      Unique = length(unique(column))
+    )
+  })))
+} else {
+  NULL
+}
+
+# UI
+ui <- dashboardPage(
+  dashboardHeader(
+    title = tags$div(
+      style = "display: flex; align-items: center; justify-content: space-between;",
+      tags$img(
+        src = "https://seeklogo.com/images/I/institut-teknologi-sepuluh-nopember-logo-DD303AEE34-seeklogo.com.png", 
+        height = '45px', 
+        width = '45px', 
+        style = "margin-right: 10px;"
+      ),
+      tags$span(
+        "DASHBOARD", 
+        style = "font-family: Arial, sans-serif; font-weight: bold; font-size: 20px; flex-grow: 1; text-align: center;"
+      ),
+      tags$img(
+        src = "https://www.its.ac.id/statistika/wp-content/uploads/sites/43/2018/03/logo-statistika-white-border.png", 
+        height = '45px', 
+        width = '45px', 
+        style = "margin-left: 10px;"
+      )
+    ),
+    titleWidth = 300
+  ),
+  dashboardSidebar(
+    width = 300,
+    sidebarMenu(
+      menuItem("Home", tabName = "dashboard", icon = icon("home")),
+      menuItem("Tentang Dataset", tabName = "about_dataset", icon = icon("info-circle")),
+      menuItem("Data", tabName = "data", icon = icon("clipboard"),
+               menuSubItem("Dataset", tabName = "dataset"),
+               menuSubItem("Struktur", tabName = "struktur"),
+               menuSubItem("Statistika Deskriptif", tabName = "statistik")
+      ),
+      menuItem("Visualisasi", icon = icon("chart-simple"),
+               menuSubItem("Variabel Numerik", tabName = "visual_numerik"),
+               menuSubItem("Variabel Kategorik", tabName = "visual_kategorik")),
+      menuItem("Relationship", tabName = "relationship", icon = icon("project-diagram")),
+      menuItem("Profil Pembuat", tabName = "profil_pembuat", icon = icon("user"))
+    )
+  ),
+  dashboardBody(
+    tags$head(
+      tags$style(HTML("
+        /* Styling sidebar menu */
+        .sidebar-menu li a {
+          font-size: 16px;
+          line-height: 20px;
+        }
+        body.skin-blue .main-sidebar .sidebar .sidebar-menu a {
+          font-size: 16px !important;
+          line-height: 20px !important;
+        }
+      "))
+    ),
+    shinyDashboardThemes(theme = "blue_gradient"),
+    tabItems(
+      # Home Tab
+      tabItem(
+        tabName = "dashboard",
+        fluidRow(
+          # Header Utama
+          column(
+            width = 12,
+            div(
+              h1("Haloo, Selamat Datang",style = "font-family: 'Arial, sans-serif'; font-weight: bold;font-size: 36px;text-align: center;margin-top: 20px;"),
+              h1("Eksplorasi Data Anggur Merah: Fakta dan Wawasan Mendalam", style = "font-family: 'Arial, sans-serif'; font-weight: bold;font-size: 36px;text-align: center;margin-top: 20px;color: #B22222;")
+            ),
+            br()
+          )
+        ),
+        fluidRow(
+          # Sub-header Fakta Penting
+          column(
+            width = 12,
+            h2("Fakta Penting tentang Red Wine", 
+               style = "font-family: 'Arial, sans-serif'; font-weight: bold; font-size: 28px; text-align: center; margin-bottom: 20px; color: #8B0000;"),
+          )
+        ),
+        # Fakta Penting Red Wine
+        fluidRow(
+          infoBox(
+            HTML("<span style='font-weight: bold;'>Konsumsi Dunia</span>"),
+            HTML("<span style='font-size: 20px;'>24</span><span style='font-size: 14px;'> Miliar Liter/Tahun<br><span style='font-size: 9px;'>Sumber: OIV 2022</span>"),
+            icon = icon("globe"), width = 3,
+            color = "red"
+          ),
+          infoBox(
+            HTML("<span style='font-weight: bold;'>Manfaat Kesehatan</span>"), 
+            HTML("<span style='font-size: 14px;'>Red wine memiliki >10 manfaat kesehatan.<br><span style='font-size: 9px;'>Sumber: Harvard Health 2023</span>"), 
+            icon = icon("heartbeat"), width = 3,
+            color = "purple"
+          ),
+          infoBox(
+            HTML("<span style='font-weight: bold;'>Pasar Terbesar</span>"), 
+            HTML("<span style='font-size: 20px;'>AS</span><br><span style='font-size: 14px;'>4,6 Miliar Liter/Tahun<br><span style='font-size: 9px;'>Sumber: OIV 2022</span>"), 
+            icon = icon("shopping-cart"), width = 3,
+            color = "teal"
+          ),
+          infoBox(
+            title = HTML("<b>Produksi Global</b>"),
+            value = HTML("<span style='font-size: 20px;'>26 Miliar</span> Liter/Tahun"),
+            subtitle = "Sumber: OIV 2022",
+            icon = icon("globe"),
+            color = "blue",
+            width = 3
+          ),
+          br(),
+          
+          # Pemisah antar bagian
+          tags$hr(style = "border-top: 2px solid #ddd; margin-top: 20px; margin-bottom: 20px;"),
+          
+          # Penjelasan Paragraf dan Gambar
+          fluidRow(
+            box(width = 4,
+                align = "center",
+                img(src = "https://www.thespruceeats.com/thmb/1RzqbsX3m-SJR_yFrMhpRwBhkCQ=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/red-wine-is-poured-into-a-glass-from-a-bottle--light-background--1153158143-98320451802c485cb6d7b5437c7fd60a.jpg", width = "100%")
+            ),
+            box(width = 8,
+                align = "justify",
+                p("Anggur merah adalah salah satu minuman fermentasi yang memiliki sejarah panjang dan merupakan bagian integral dari budaya kuliner di berbagai belahan dunia. 
+       Minuman ini diproduksi dengan memanfaatkan proses fermentasi kulit, biji, dan sari buah anggur yang menghasilkan warna merah khas dan kaya akan kandungan tanin."),
+                p("Dalam jumlah yang moderat, konsumsi anggur merah diyakini memiliki manfaat kesehatan yang signifikan. Beberapa penelitian menunjukkan bahwa senyawa polifenol, seperti resveratrol yang terdapat dalam anggur merah, 
+       memiliki sifat antioksidan yang dapat mendukung kesehatan jantung, meningkatkan fungsi pembuluh darah, dan membantu mencegah penyakit degeneratif."),
+                p("Selain manfaat kesehatannya, anggur merah juga memiliki nilai sosial dan budaya. Minuman ini sering digunakan dalam berbagai acara penting, mulai dari perayaan, ritual keagamaan, hingga momen santai bersama keluarga dan teman."),
+                br(),
+                p("Sumber: Wine Enthusiast 2022")
+            )
+          ),
+          
+          # Video Edukasi
+          fluidRow(
+            box(
+              title = "5 Manfaat Mengonsumsi Anggur Merah dalam Aspek Kesehatan", width = 12, solidHeader = TRUE, status = "primary",
+              tags$iframe(
+                src = "https://www.youtube.com/embed/G_6jS_Gkv7c", 
+                width = "100%", 
+                height = "400px", 
+                frameborder = "0", 
+                allowfullscreen = TRUE
+              )
+            )
+          ),
+          
+          # Infografis
+          fluidRow(
+            box(width = 6,
+                title = "Infografis Anggur Merah",
+                status = "primary",
+                align = "center",
+                img(src = "https://m.media-amazon.com/images/I/81LNQSX7ndL.jpg", width = "100%")
+            ),
+            box(width = 6,
+                title = "Infografis Tentang Anggur Merah",
+                status = "primary",
+                align = "center",
+                img(src = "https://cdn3.vectorstock.com/i/1000x1000/28/97/wine-infographic-vector-7912897.jpg", width = "100%")
+            )
+          )
+        )
+        ),
+        
+        # Tentang Dataset Tab
+        tabItem(tabName = "about_dataset",
+                h2("Informasi Dataset", align = "center"),
+                fluidRow(
+                  box(width = 4,
+                      align = "center",
+                      img(src = "https://th.bing.com/th/id/OIP.ONJIIsB2XapWUGdWxL20lgHaFH?pid=ImgDet&h=191&dpr=2", width = "100%")),
+                  box(
+                    align = "justify",
+                    title = "Latar Belakang & Tujuan Dataset", width = 8, solidHeader = TRUE, status = "primary",
+                    p("Anggur merah telah menjadi salah satu minuman fermentasi yang paling populer dan bernilai budaya tinggi di berbagai belahan dunia. Sebagai bagian dari tradisi kuliner dan industri minuman, kualitas anggur merah menjadi perhatian utama bagi produsen dan konsumen. Penilaian kualitas anggur tidak hanya bergantung pada rasa, aroma, dan warna, tetapi juga pada karakteristik kimiawi yang mendasari profilnya. Dalam proses produksinya, sifat fisik dan kimia anggur memainkan peran penting dalam menentukan kualitas akhirnya."),
+                    p("Dataset 'Red Wine Quality' menawarkan peluang untuk mengeksplorasi hubungan antara komposisi kimia anggur merah dan persepsi kualitasnya. Dataset ini mencakup informasi tentang berbagai atribut kimiawi, seperti kadar keasaman, gula residu, kandungan alkohol, hingga total sulfur dioksida, serta penilaian kualitas sensorik oleh panel ahli. Dengan menggunakan data ini, analisis dan penelitian dapat dilakukan untuk memahami faktor-faktor yang paling memengaruhi kualitas anggur, baik dari perspektif kimiawi maupun sensorik."),
+                    p("Tujuan utama dari dataset ini adalah untuk membantu industri anggur meningkatkan kualitas produk melalui pemahaman mendalam tentang pengaruh karakteristik kimia terhadap kualitas anggur. Selain itu, dataset ini juga memberikan dasar yang kuat untuk mengembangkan model prediktif berbasis pembelajaran mesin yang dapat secara otomatis menilai kualitas anggur berdasarkan data kimiawi. Hal ini tidak hanya meningkatkan efisiensi produksi tetapi juga membantu produsen dalam menjaga konsistensi kualitas produk mereka."),
+                  )
+                ),
+                fluidRow(
+                  box(
+                    title = "Penjelasan Variabel", width = 12, align = "center", solidHeader = TRUE, status = "info",
+                    DTOutput("variables_table")
+                  )
+                )
+        ),
+        
+        # Dataset Tab
+        tabItem(tabName = "dataset",
+                h3("Tampilan Data"),
+                DTOutput("dataset_table")
+        ),
+        
+        # Struktur Dataset Tab
+        tabItem(tabName = "struktur",
+                h3("Struktur Dataset"),
+                verbatimTextOutput("struktur_output")
+        ),
+        
+        # Statistika Deskriptif Tab
+        tabItem(tabName = "statistik",
+                fluidRow(
+                  box(title = "Statistika Deskriptif Variabel Numerik",align = "center" ,width = 12,
+                      DTOutput("summary_output1")
+                  ),
+                  box(title = "Statistika Deskriptif Variabel Kategorik",align = "center", width = 12,
+                      DTOutput("summary_output2")
+                  )
+                )
+        ),
+        tabItem(tabName = "visual_numerik",
+                h2("Visualisasi Interaktif Variabel Numerik", align = "center"),
+                fluidRow(
+                  column(12,
+                         div(
+                           style = "display: flex; justify-content: space-between; align-items: center;",
+                           selectInput("variable", "Pilih Variabel:", choices = setdiff(colnames(numeric_columns), "quality"), width = "48%"),
+                           selectInput("outputType", "Pilih Tipe Visualisasi:", choices = c("Distribusi" = "dist", "Boxplot" = "boxplot"), width = "48%")
+                         )
+                  )
+                ),
+                fluidRow(
+                  box(width = 12,
+                      plotOutput("plot", height = "500px")
+                  )
+                )
+        ),
+        tabItem(tabName = "visual_kategorik",
+                h2("Visualisasi Interaktif Variabel Kategorik", align = "center"),
+                sidebarLayout(
+                  sidebarPanel(
+                    selectInput("var_choice", "Pilih Variabel:", choices = colnames(categorical_columns)),
+                    selectInput("plot_type", "Pilih Tipe Visualisasi:", choices = c("Pie Chart" = "pie", "Countplot" = "countplot"))
+                  ),
+                  mainPanel(
+                    plotOutput("categorical_plot")
+                  )
+                )
+        ),
+        # Relationship Tab
+        tabItem(tabName = "relationship",
+                fluidRow(
+                  box(title = "Scatter Plot untuk Dua Variabel Numerik vs Quality", width = 6, 
+                      selectInput("scatter_var_x", "Pilih Variabel X1:", choices = colnames(numeric_columns)[-which(colnames(numeric_columns) == "quality")]),
+                      selectInput("scatter_var_y", "Pilih Variabel X2:", choices = colnames(numeric_columns)[-which(colnames(numeric_columns) == "quality")]),
+                      plotOutput("scatterPlot")
+                  ),
+                  box(title = "Heatmap Korelasi Variabel Numerik", width = 6, 
+                      checkboxGroupInput("variables", "Pilih Variabel:", 
+                                         choices = colnames(numeric_columns)[-which(colnames(numeric_columns) == "quality")], 
+                                         selected = colnames(numeric_columns)[1:3]),
+                      plotOutput("corHeatmap")
+                  ),
+                  box(title = "Bar Chart Quality vs Variabel Numerik", width = 12, 
+                      selectInput("bar_var", "Pilih Variabel Numerik:", choices = colnames(numeric_columns)[-which(colnames(numeric_columns) == "quality")]),
+                      plotOutput("barChart")
+                  )
+                )
+        ),
+      tabItem(tabName = "profil_pembuat",
+              div(h1(strong("Tentang Saya"), 
+                   style = "text-align: center; font-family: 'Arial, sans-serif'; font-weight: bold; font-size: 36px; color: #2F4F4F;"),
+                br()
+              ),
+              div(img(src = "https://media.licdn.com/dms/image/v2/D5603AQH-OpIXpTEAFg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1716357572036?e=1739404800&v=beta&t=JovkGn_etUz3kOtleX3zCMMcYzJTpFLwMzcXnC2nf18",
+                  height = "300px",width = "300px",style = "border-radius: 50%; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); margin-bottom: 20px;"
+                ), 
+                style = "text-align: center;"
+              ),
+              div(h3("M. Iqbal Nurrifki",style = "text-align: center; font-family: 'Georgia, serif'; font-weight: bold; font-size: 24px; color: #4682B4; margin-bottom: 5px;"
+                )
+              ),
+              div("Institut Teknologi Sepuluh Nopember | Statistics | 5003221061",
+                style = "text-align: center; font-family: 'Arial, sans-serif'; font-size: 16px; color: #696969; margin-bottom: 10px;"
+              ),
+              div(strong("Contact:"), " miqbalnurrifki@gmail.com", 
+                style = "text-align: center; font-family: 'Courier New, monospace'; font-size: 14px; font-style: italic; color: #333;"
+              ),
+              div(strong("LinkedIn:"), 
+                " www.linkedin.com/in/miqbalnurrifki", 
+                style = "text-align: center; font-family: 'Courier New, monospace'; font-size: 14px; font-style: italic; color: #333; margin-top: 5px;"
+              )
+      )
+      
+      )
+    )
+  )
+
+# Server
+server <- function(input, output) {
+  output$dataset_table <- renderDT({ datatable(df) })
+  output$struktur_output <- renderPrint({ str(df) })
+  
+  output$summary_output1 <- renderDT({ datatable(numeric_summary_df) })
+  output$summary_output2 <- renderDT({ datatable(categorical_summary_df) })
+  
+  output$variables_table <- renderDT({
+    datatable(data.frame(
+      Variabel = c(
+        "Keasaman Tetap", "Keasaman Volatil", "Asam Sitrat", "Gula Residu", 
+        "Klorida", "Sulfur Dioksida Bebas", "Total Sulfur Dioksida", 
+        "Kepadatan", "pH", "Alkohol", "Sulfat", "Kualitas"
+      ),
+      Deskripsi = c(
+        "Mengacu pada kandungan asam tetap (non-volatil) dalam anggur, seperti asam tartarat, yang tidak menguap selama fermentasi. Asam ini memberikan struktur pada anggur dan memengaruhi rasa segar yang dirasakan.",
+        "Jumlah asam asetat dalam anggur, yang pada kadar tinggi dapat memberikan rasa asam atau tidak enak. Parameter ini sangat penting dalam memastikan kualitas anggur.",
+        "Kandungan asam sitrat, yang merupakan salah satu asam alami dalam anggur. Asam ini memberikan kesegaran dan keseimbangan pada rasa anggur.",
+        "Jumlah gula yang tersisa setelah proses fermentasi selesai. Gula residu ini menentukan tingkat manis anggur. Semakin tinggi nilai ini, semakin manis anggur tersebut.",
+        "Kandungan klorida atau garam dalam anggur. Kadar garam yang terlalu tinggi dapat memberikan rasa asin yang tidak diinginkan.",
+        "Sulfur dioksida bebas, yaitu jumlah SO₂ yang tersedia untuk bereaksi dalam anggur. SO₂ bertindak sebagai pengawet, melindungi anggur dari oksidasi dan pertumbuhan mikroba.",
+        "Total kandungan SO₂, yang mencakup SO₂ bebas dan terikat. Parameter ini penting untuk menjaga stabilitas anggur selama penyimpanan.",
+        "Mengukur kepadatan anggur. Kepadatan ini berhubungan dengan kandungan alkohol dan gula dalam anggur.",
+        "Parameter yang menggambarkan tingkat keasaman atau kebasaan anggur pada skala 0 hingga 14. Sebagian besar anggur memiliki nilai pH antara 3 hingga 4. pH memengaruhi rasa dan stabilitas anggur.",
+        "Persentase volume alkohol dalam anggur. Alkohol memberikan rasa hangat pada anggur dan memainkan peran penting dalam persepsi kualitasnya.",
+        "Mengacu pada jumlah garam sulfat dalam anggur. Sulfat menambahkan rasa pahit yang halus dan juga membantu menjaga stabilitas mikrobiologis anggur.",
+        "Variabel target dalam dataset, yang menunjukkan penilaian kualitas sensorik anggur berdasarkan skala 0 (sangat buruk) hingga 10 (sangat baik). Sebagian besar nilai kualitas dalam dataset berkisar antara 3 hingga 8."
+      )
+    ), options = list(pageLength = 12))
+  })
+  
+  
+  
+  
+  
+  output$plot <- renderPlot({
+    var <- input$variable
+    plotType <- input$outputType
+    
+    if(plotType == "dist") {
+      ggplot(df, aes_string(x = var)) + 
+        geom_histogram(aes(y = ..density..), fill = "#ADD8E6", color = "#000000", bins = 30, alpha = 0.5) +
+        geom_density(color = "#6A0DAD", size = 1) +
+        labs(title = paste("Distribusi (Histogram + Density)", var), x = var, y = "Density")
+    } else {
+      ggplot(df, aes_string(y = var)) + 
+        geom_boxplot(fill = "orange", alpha = 0.5) +
+        labs(title = paste("Boxplot", var), y = var)
+    }
+  })
+  
+  output$categorical_plot <- renderPlot({
+    selected_var <- input$var_choice
+    plot_type <- input$plot_type
+    
+    if (plot_type == "pie") {
+      # Pie Chart tetap sama
+      df_summary <- df %>%
+        group_by(!!sym(selected_var)) %>%
+        summarise(count = n()) %>%
+        mutate(percentage = count / sum(count) * 100)
+      
+      ggplot(df_summary, aes(x = "", y = percentage, fill = !!sym(selected_var))) + 
+        geom_bar(stat = "identity", width = 1, color = "white") +
+        coord_polar("y", start = 0) +
+        theme_void() +
+        labs(fill = selected_var, title = paste("Pie Chart", selected_var)) +
+        geom_label_repel(
+          aes(
+            label = paste0(round(percentage, 1), "%"),
+            y = cumsum(percentage) - percentage / 2
+          ),
+          size = 5,
+          color = "white",
+          fill = "black",
+          box.padding = 0.3,
+          point.padding = 0.5,
+          show.legend = FALSE
+        ) +
+        theme(
+          plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+          legend.position = "right",
+          legend.title = element_text(size = 12, face = "bold"),
+          legend.text = element_text(size = 10)
+        )
+    } else if (plot_type == "countplot") {
+      # Perbaikan pada Countplot
+      count_data <- df %>%
+        group_by(!!sym(selected_var)) %>%
+        summarise(count = n())  # Hitung jumlah observasi
+      
+      # Pastikan kolom selected_var diubah menjadi faktor
+      count_data[[selected_var]] <- as.factor(count_data[[selected_var]])
+      
+      ggplot(count_data, aes(x = !!sym(selected_var), y = count, fill = !!sym(selected_var))) +
+        geom_bar(stat = "identity", color = "white") +
+        geom_text(aes(label = count), vjust = -0.5, size = 5) + # Tambahkan label jumlah
+        scale_fill_brewer(palette = "Set3") +
+        labs(
+          title = paste("Countplot", selected_var), 
+          x = selected_var, 
+          y = "Jumlah Observasi"
+        ) +
+        theme_minimal() +
+        theme(
+          plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+          axis.title.x = element_text(size = 14, face = "bold"),
+          axis.title.y = element_text(size = 14, face = "bold"),
+          axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 12)
+        )
+    }
+  })
+  
+  
+  output$scatterPlot <- renderPlot({
+    xvar <- input$scatter_var_x  # Variabel X yang dipilih dari input
+    yvar <- input$scatter_var_y  # Variabel Y yang dipilih dari input
+    
+    # Pastikan variabel 'quality' bertipe faktor untuk pemetaan warna
+    df$quality <- factor(df$quality, levels = c(3, 4, 5, 6, 7, 8))
+    
+    # Plot scatter plot menggunakan ggplot2
+    ggplot(df, aes_string(x = xvar, y = yvar, color = "quality")) +
+      geom_point(alpha = 0.7, size = 2) +
+      scale_color_manual(values = c("3" = "blue", "4" = "green", "5" = "yellow", 
+                                    "6" = "orange", "7" = "red", "8" = "purple")) + 
+      labs(title = paste("Scatter Plot", xvar, "vs", yvar),
+           x = xvar, 
+           y = yvar, 
+           color = "Quality") +
+      theme_minimal() +
+      theme(legend.position = "right")
+  })
+  
+  output$barChart <- renderPlot({
+    bar_var <- input$bar_var
+    
+    # Agregasi data: menghitung rata-rata nilai bar_var untuk setiap kategori quality
+    summarized_df <- df %>%
+      group_by(quality) %>%
+      summarize(mean_value = mean(.data[[bar_var]], na.rm = TRUE), .groups = "drop")
+    
+    # Plot barchart dengan data yang telah diringkas
+    ggplot(summarized_df, aes(x = factor(quality), y = mean_value, fill = factor(quality))) + 
+      geom_bar(stat = "identity", color = "black", position = "dodge") +
+      scale_fill_brewer(palette = "Set3", name = "Quality Levels") +  # Pilihan skema warna
+      labs(
+        title = paste("Bar Chart of Quality vs", bar_var),
+        x = "Quality Levels",
+        y = paste("Average", bar_var)  # Label y menyesuaikan agregasi
+      ) +
+      theme_minimal() + # Tema yang lebih bersih
+      theme(
+        plot.title = element_text(size = 14, face = "bold", hjust = 0.5),  # Judul lebih menarik
+        axis.text.x = element_text(size = 12, angle = 45, hjust = 1),      # Rotasi label sumbu X
+        axis.text.y = element_text(size = 12),                             # Ukuran teks sumbu Y
+        legend.position = "right"                                          # Posisi legend
+      )
+  })
+  
+  output$boxPlot <- renderPlot({
+    box_var <- input$box_var
+    plot_type <- input$plotTypeY
+    
+    if(plot_type == "box") {
+      ggplot(df, aes_string(x = "quality", y = box_var)) + 
+        geom_boxplot(fill = "orange", alpha = 0.5) +
+        labs(title = paste("Box Plot Quality vs", box_var), x = "Quality", y = box_var)
+    } else {
+      ggplot(df, aes_string(x = "quality", y = box_var)) + 
+        geom_violin(fill = "lightblue", alpha = 0.5) +
+        labs(title = paste("Violin Plot Quality vs", box_var), x = "Quality", y = box_var)
+    }
+  })
+  
+  output$corHeatmap <- renderPlot({
+    selected_variables <- input$variables
+    numeric_data <- df[selected_variables]
+    
+    corr_matrix <- round(cor(numeric_data, use = "complete.obs"), 2)
+    melted_corr_matrix <- melt(corr_matrix)
+    
+    ggplot(melted_corr_matrix, aes(x = Var1, y = Var2, fill = value)) +
+      geom_tile() +
+      geom_text(aes(label = value)) +
+      scale_fill_gradient2(low = "red", high = "green", mid = "white", midpoint = 0) +
+      labs(title = "Correlation Heatmap")
+  })
+}
+
+shinyApp(ui, server)
+

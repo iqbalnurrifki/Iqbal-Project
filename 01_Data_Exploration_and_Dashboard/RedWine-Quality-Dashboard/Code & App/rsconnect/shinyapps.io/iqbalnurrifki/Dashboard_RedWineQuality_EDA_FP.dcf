@@ -1,0 +1,13 @@
+name: Dashboard_RedWineQuality_EDA_FP
+title: Dashboard_RedWineQuality_EDA_FP
+username: iqbalnurrifki
+account: iqbalnurrifki
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13599665
+bundleId: 9522027
+url: https://iqbalnurrifki.shinyapps.io/Dashboard_RedWineQuality_EDA_FP/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: www/.RData

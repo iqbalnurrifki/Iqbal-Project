@@ -1,0 +1,2 @@
+Link Dashboard:
+https://iqbalnurrifki.shinyapps.io/Dashboard_RedWineQuality_EDA_FP/
