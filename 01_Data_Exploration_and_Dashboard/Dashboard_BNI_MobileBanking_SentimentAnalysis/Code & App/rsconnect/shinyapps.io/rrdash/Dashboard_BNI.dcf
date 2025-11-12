@@ -1,0 +1,12 @@
+name: Dashboard_BNI
+title: Dashboard_BNI
+username: rrdash
+account: rrdash
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13839991
+bundleId: 9720155
+url: https://rrdash.shinyapps.io/Dashboard_BNI/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
