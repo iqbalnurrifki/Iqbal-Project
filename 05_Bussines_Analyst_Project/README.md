@@ -1,132 +1,129 @@
 # 📊 Market Analysis & Strategy for Government Lighting Segment  
-_Data-Driven Business Analysis for Government PJU Market (B2G)_
+_Data-Driven Market Intelligence & Strategic Insights for the Public Sector (B2G)_
 
 ---
 
 ## 🔗 Project Overview  
-Proyek ini menganalisis pasar **Penerangan Jalan Umum (PJU)** pada segmen pemerintahan (B2G) menggunakan pendekatan **data mining, market intelligence, dan strategi bisnis**.
+This project delivers a comprehensive **market intelligence analysis** for the Government Lighting (PJU) segment by utilizing **web scraping**, **data analytics**, and **strategic consulting frameworks**.  
 
-Melalui kombinasi **web scraping**, **exploratory analysis**, dan **market mapping**, proyek ini menyajikan gambaran komprehensif mengenai:
+The goal is to provide a clear and actionable understanding of:
 
-- kompetisi dan harga di e-Catalog LKPP,  
-- potensi permintaan tiap wilayah,  
-- distribusi kategori produk (barang / jasa / paket),  
-- dan rekomendasi strategi untuk penetrasi pasar yang efektif bagi perusahaan.  
+- the competitive landscape on the Indonesian e-Catalog platform (LKPP),  
+- pricing patterns and product availability,  
+- regional purchasing behavior,  
+- and strategic opportunities for business expansion.  
 
-Analisis ini membantu tim bisnis mengambil keputusan strategis seperti positioning harga, segmentasi wilayah, dan prioritas market entry.
+This project supports data-driven decision-making for companies targeting the public sector, particularly those seeking stronger positioning in the **street lighting solution market**.
 
 ---
 
 ## 🎯 Objectives  
-- Mengidentifikasi struktur pasar PJU di e-Catalog LKPP.  
-- Membandingkan price range, watt, kategori produk, dan performa vendor.  
-- Membuat *Market Mapping* berbasis **Purchasing Power × Transaction Power**.  
-- Menyusun rekomendasi strategi pasar bagi perusahaan.  
-- Memberikan insight berbasis data untuk mendukung keputusan bisnis.
+- Identify the market structure and product distribution for PJU on e-Catalog LKPP.  
+- Analyze price ranges, wattage specifications, supplier competitiveness, and sales volume.  
+- Develop a **Market Mapping Model** using *Purchasing Power × Transaction Power*.  
+- Recommend strategic actions to sharpen market penetration and improve competitiveness.  
+- Provide supporting insights for business development and policy alignment.
 
 ---
 
 ## 📈 Key Insights  
-- **Kategori barang** mendominasi transaksi, namun **jasa pemeliharaan** memiliki nilai jual tinggi per item.  
-- Wilayah seperti **Surabaya, Malang, Makassar** muncul sebagai segmen prioritas dalam market mapping.  
-- Produk dengan rentang harga **0–10 juta** menyumbang persentase terbesar dari transaksi.  
-- **Philips** kuat di watt **90W**, sehingga terdapat peluang pada segmentasi watt 30–60W.  
-- Beberapa daerah memiliki APBD besar tetapi transaksi rendah → peluang edukasi dan aktivasi pasar.
-
----
-
-## 📊 Dashboard & Analytics  
-_(Opsional — jika nanti ditambahkan dashboard Looker Studio / Power BI)_  
-**Coming Soon / In Development**
+- **Product category (barang)** dominates the market, while **service packages** generate higher revenue per transaction.  
+- Cities such as **Surabaya, Malang, Makassar** emerge as high-potential regions in the market mapping quadrant.  
+- The majority of products fall into the **0–10 million IDR price range**, indicating a mass-market sweet spot.  
+- Major brands (e.g., Philips) strongly dominate the 90W segment, leaving opportunities in the **30–60W range**.  
+- Several regions have a high APBD (regional budget) but low transaction activity → strong market activation potential.
 
 ---
 
 ## 🧭 Methodology  
 
-### **1. Data Collection (Scraping)**  
-Scraping dilakukan pada halaman produk PJU di e-Catalog LKPP, mencakup:  
+### **1. Data Collection (Web Scraping)**  
+Data was collected from the PJU category on Indonesia’s LKPP e-Catalog, extracting:
 
-- nama produk  
-- penyedia  
-- watt  
-- harga  
-- kategori (barang / jasa / paket)  
-- lokasi vendor  
-- total terjual  
-- link detail produk  
+- product names  
+- wattage  
+- supplier information  
+- prices  
+- product categories  
+- total units sold  
+- vendor locations  
+- product URLs  
 
-**Tools:** `Selenium`, `BeautifulSoup`, `Pandas`.
+**Tools:** Selenium, BeautifulSoup, Pandas.
 
 ---
 
 ### **2. Data Cleaning & Preprocessing**  
-- Standarisasi watt dan kategori  
-- Normalisasi format harga  
-- Penanganan missing values  
-- Filtering produk non-relevan  
-- Penyusunan data dictionary  
+Steps include:
+
+- normalizing wattage formats  
+- standardizing price data  
+- removing duplicated/non-PJU items  
+- handling missing data  
+- creating a data dictionary  
 
 ---
 
 ### **3. Exploratory Data Analysis (EDA)**  
-EDA dilakukan untuk menjawab pertanyaan bisnis seperti:  
+The EDA answers critical business questions such as:
 
-- Produk / watt mana yang paling sering dibeli?  
-- Kota mana yang paling aktif bertransaksi?  
-- Bagaimana gap harga antar vendor?  
-- Bagaimana peta persaingan antar merek?  
-- Kategori apa yang paling dominan?  
-- Bagaimana distribusi permintaan berdasarkan wilayah?
+- Which wattage and product types are most purchased?  
+- Which cities show the highest transaction volume?  
+- How do price ranges differ between suppliers?  
+- How competitive are major brands?  
+- What categories dominate sales (goods/services/packages)?  
+- How does regional demand vary across Indonesia?
 
-Visualisasi yang digunakan: bar chart, donut chart, treemap, heatmap.
+Visualization techniques: donut charts, bar charts, treemaps, and line trends.
 
 ---
 
 ### **4. Market Mapping Framework**  
-Pemetaan dilakukan menggunakan dua sumbu:
 
-#### **Purchasing Power**  
-- APBD  
-- Anggaran penerangan  
+A two-dimensional segmentation is used:
+
+#### **Purchasing Power Indicators**  
+- Regional APBD (budget) allocation  
+- Public lighting expenditure  
 - Smart city readiness  
-- Minimum technical specification  
+- Minimum technical spec requirements  
 
-#### **Transaction Power**  
-- Transaksi PJU e-Catalog  
-- Loyalitas pembeli  
-- Kualitas layanan  
-- SLA penyedia  
+#### **Transaction Power Indicators**  
+- e-Catalog PJU transaction volume  
+- Buyer loyalty  
+- SLA & vendor service quality  
+- Availability of supporting products  
 
-Hasilnya, empat segmen pasar terbentuk:
+Resulting in four strategic segments:
 
-| Segment      | Karakteristik                           | Strategi                                         |
-|--------------|------------------------------------------|--------------------------------------------------|
-| **Growth**   | Anggaran besar, transaksi tinggi         | IoT, showcase, partnership                       |
-| **Maintain** | Anggaran besar, transaksi rendah         | Pelatihan e-Catalog, technical guidance          |
-| **Harvest**  | Transaksi tinggi, anggaran rendah        | Bundling, SLA kuat, efisiensi                    |
-| **Develop**  | Anggaran rendah, transaksi rendah        | Edukasi, CSR, entry-level products               |
+| Segment        | Characteristics                              | Recommended Strategy                                 |
+|----------------|-----------------------------------------------|-------------------------------------------------------|
+| **Growth**     | High budget, high transactions                | IoT integration, smart lighting, long-term partnership |
+| **Maintain**   | High budget, low transactions                 | Guidance on e-Catalog usage, technical workshops       |
+| **Harvest**    | Low budget, high transactions                 | Bundling offers, strong SLA, cost-efficient solutions |
+| **Develop**    | Low budget, low transactions                  | Education, CSR pilots, entry-level lighting solutions |
 
 ---
 
 ## 🧩 Strategy Recommendations  
-- **Go-to-market berbasis segmentasi wilayah**, bukan pendekatan generik.  
-- **Bundling produk + jasa pemeliharaan** untuk meningkatkan revenue.  
-- **Smart lighting adoption** untuk wilayah pada segmen growth.  
-- **Pendampingan RUP dan bimbingan teknis** untuk segmen maintain.  
-- **Produk low-cost** untuk daerah develop.  
-- **Brand positioning** untuk kompetisi watt dominan dan gap harga.
+- Adopt **region-specific go-to-market strategies** instead of a one-size-fits-all approach.  
+- Offer **bundled product + maintenance service packages** to increase contract value.  
+- Prioritize **smart lighting solutions** in high-growth regions.  
+- Provide **technical assistance (RUP, specification drafting, e-Catalog training)** to maintain high-budget but low-transaction cities.  
+- Deliver **affordable product lines** for developing regions.  
+- Strengthen **brand positioning** in competitive wattage segments.
 
 ---
 
 ## 🧰 Tools & Technologies  
 
-| Category           | Tools / Platforms                 |
-|-------------------|-----------------------------------|
-| Data Scraping     | Python (Selenium, BeautifulSoup)  |
-| Data Processing   | Pandas, NumPy                     |
-| Visualization     | Matplotlib, Seaborn               |
-| Market Mapping    | Excel / Google Sheets             |
-| Documentation     | PDF, PowerPoint                   |
+| Category           | Tools / Platforms                         |
+|-------------------|---------------------------------------------|
+| Data Scraping     | Python (Selenium, BeautifulSoup)            |
+| Data Processing   | Pandas, NumPy                               |
+| Visualization     | Matplotlib, Seaborn                         |
+| Market Mapping    | Excel, Google Sheets                        |
+| Documentation     | PDF, PowerPoint                             |
 
 ---
 
